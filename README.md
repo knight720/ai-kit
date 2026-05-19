@@ -16,23 +16,146 @@
 
 ```
 ai-kit/
-└── skills/                      # GitHub Copilot CLI 自訂 Skills
-    └── gws-docs-parser/         # 解析 Google Docs 的強健版 Skill
-        └── SKILL.md
+├── .github/
+│   └── plugin/
+│       └── plugin.json          # Copilot Plugin 格式（供 copilot plugin install 使用）
+├── skills/
+│   ├── gws-docs-markdown/       # 以 Markdown 格式讀寫 Google Doc
+│   │   └── SKILL.md
+│   └── gws-docs-parser/         # 解析 Google Docs 的強健版（含 CJK 編碼修正）
+│       └── SKILL.md
+└── marketplace.json             # Marketplace 索引（供 copilot plugin marketplace add 使用）
+```
+
+---
+
+## 安裝 Plugin
+
+> **Plugin** 是 Skill 的集合。安裝 plugin 後，其下所有 skills 會自動對 Copilot CLI 生效。
+
+### 方式一：從 GitHub 安裝（Remote）
+
+```powershell
+# 直接從 GitHub repo 安裝（一行搞定）
+copilot plugin install knight720/ai-kit
+```
+
+更新：
+
+```powershell
+copilot plugin update ai-kit
+```
+
+---
+
+### 方式二：從本地目錄安裝（Local）
+
+適用於本機開發、尚未推到 GitHub 的情境。
+
+```powershell
+# Step 1：Clone repo
+git clone https://github.com/knight720/ai-kit.git D:\Code\SideProject\ai-kit
+
+# Step 2：將本地路徑加入 marketplace（只需執行一次）
+copilot plugin marketplace add D:\Code\SideProject\ai-kit
+
+# Step 3：安裝 plugin
+copilot plugin install ai-kit@ai-kit
+```
+
+更新（需先 commit，plugin update 從 git 讀取）：
+
+```powershell
+git -C D:\Code\SideProject\ai-kit pull   # 或在開發中 commit 本地變更
+copilot plugin update ai-kit
+```
+
+---
+
+### 確認安裝狀態
+
+```powershell
+copilot plugin list
+```
+
+---
+
+## 新增 Skill
+
+> **Skill** 是一份 `SKILL.md`，描述 Copilot 應在什麼情況下執行什麼步驟。
+
+### Step 1：建立 skill 目錄與 SKILL.md
+
+```powershell
+New-Item -ItemType Directory -Path "skills\my-new-skill"
+New-Item -ItemType File -Path "skills\my-new-skill\SKILL.md"
+```
+
+`SKILL.md` 最小結構：
+
+```markdown
+---
+name: my-new-skill
+description: >
+  一句話說明此 skill 做什麼，以及何時應該觸發。
+  觸發關鍵字也寫在這裡，例如「當使用者說 xxx 時，立即使用此 skill」。
+---
+
+# my-new-skill
+
+## 工作流程
+
+說明 Copilot 應該執行的步驟...
+```
+
+### Step 2：加入 marketplace.json 與 plugin.json
+
+**`marketplace.json`**（新增 skill 路徑到 `skills` 陣列）：
+
+```json
+"skills": [
+  "./skills/gws-docs-markdown",
+  "./skills/gws-docs-parser",
+  "./skills/my-new-skill"
+]
+```
+
+**`.github/plugin/plugin.json`**（同步新增）：
+
+```json
+"skills": [
+  "./skills/gws-docs-markdown",
+  "./skills/gws-docs-parser",
+  "./skills/my-new-skill"
+]
+```
+
+### Step 3：Commit 並更新
+
+```powershell
+git add .
+git commit -m "feat: add my-new-skill"
+
+copilot plugin update ai-kit
 ```
 
 ---
 
 ## Skills 說明
 
+### `gws-docs-markdown`
+
+以 Markdown 格式讀取、編輯、寫入 Google Doc。
+
+**工作流程：** 匯出 .md → 本地修改 → 整份覆蓋上傳
+
+**依賴工具：** `gws`
+
+---
+
 ### `gws-docs-parser`
 
 解析 Google Docs 文件內容（含多分頁）的強健版 Skill，用來補強官方 `gws docs` CLI 的已知 JSON 編碼缺陷。
-
-**適用情境：**
-- 讀取含中文 / CJK 字元的 Google Doc
-- 文件有多個分頁（tabs）需一次取得
-- `gws docs documents get` 輸出 JSON 解析失敗
 
 **解決的已知問題：**
 
@@ -45,19 +168,6 @@ ai-kit/
 | PowerShell `>` 重導向造成亂碼 | 改用 `Out-File -Encoding utf8` |
 
 **依賴工具：** `gws`、`python`
-
----
-
-## 安裝方式
-
-Skills 使用 Symbolic Link 安裝至 `~\.copilot\skills\`：
-
-```powershell
-# 以 gws-docs-parser 為例
-New-Item -ItemType SymbolicLink `
-  -Path "$env:USERPROFILE\.copilot\skills\gws-docs-parser" `
-  -Target "D:\Code\SideProject\ai-kit\skills\gws-docs-parser"
-```
 
 ---
 

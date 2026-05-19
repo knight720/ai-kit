@@ -1,0 +1,20 @@
+{
+  "name": "ai-kit",
+  "description": "Personal Copilot CLI skill kit for Google Workspace integration and productivity workflows.",
+  "version": "1.0.0",
+  "author": {
+    "name": "knight720"
+  },
+  "license": "MIT",
+  "keywords": [
+    "gws",
+    "google-workspace",
+    "google-docs",
+    "markdown",
+    "productivity"
+  ],
+  "skills": [
+    "./skills/gws-docs-markdown",
+    "./skills/gws-docs-parser"
+  ]
+}
