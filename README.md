@@ -72,6 +72,36 @@ copilot plugin update ai-kit
 
 ---
 
+### 方式三：Symbolic Link（本地開發推薦）
+
+適用於需要**邊用邊修改、即改即生效**的情境。直接將 Copilot 讀取 skill 的路徑指向 repo，省去每次修改都要 `plugin update` 的步驟。
+
+```powershell
+# Step 1：Clone repo（已有就跳過）
+git clone https://github.com/knight720/ai-kit.git D:\Code\SideProject\ai-kit
+
+# Step 2：為每個 skill 建立 symlink（需以系統管理員身分執行，只做一次）
+New-Item -ItemType SymbolicLink `
+  -Path "$HOME\.copilot\skills\gws-docs-markdown" `
+  -Target "D:\Code\SideProject\ai-kit\skills\gws-docs-markdown"
+
+New-Item -ItemType SymbolicLink `
+  -Path "$HOME\.copilot\skills\gws-docs-parser" `
+  -Target "D:\Code\SideProject\ai-kit\skills\gws-docs-parser"
+```
+
+日常開發循環：
+
+```
+使用 skill → 發現問題 → 直接編輯 skills\xxx\SKILL.md
+  → 下次 Copilot session 自動生效（不需要 plugin update）
+  → 滿意後 git commit + git push
+```
+
+> **注意：** 新增 skill 時，除了建立目錄與 `SKILL.md`，還需補一條新的 `New-Item` symlink 指令，並更新 `plugin.json` 與 `marketplace.json`。
+
+---
+
 ### 確認安裝狀態
 
 ```powershell
